@@ -10,16 +10,53 @@ package Form;
  * @author Kintil
  */
 import java.sql.*;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 public class home extends javax.swing.JFrame {
 
     /**
      * Creates new form home
      */
     public Statement st;
-    public Statement rs;
+    public ResultSet rs;
     Connection cn = koneksi.koneksidatabase.Koneksi();
     public home() {
         initComponents();
+        TampilData();
+    } 
+    
+    private void Bersih(){
+        txtalamat.setText("");
+        txtname.setText("");
+        txtemail.setText("");
+        txtumur.setText("");
+    }
+    private void TampilData(){
+        try {
+            st = cn.createStatement();  
+            rs = st.executeQuery("SELECT * FROM user");
+            DefaultTableModel model = new DefaultTableModel();
+            model.addColumn("No");
+            model.addColumn("Nama");
+            model.addColumn("Alamat");
+            model.addColumn("Umur");
+            model.addColumn("Email");
+            int no = 1;
+            model.getDataVector().removeAllElements();
+            model.setRowCount(0);
+            while (rs.next()) {
+                Object[] data = {
+                    no++,
+                  rs.getString("nama"),
+                  rs.getString("alamat"),
+                  rs.getString("umur"),
+                  rs.getString("email"),
+                };
+                model.addRow(data);
+                tbldata.setModel(model);
+            }
+        } catch (Exception e) {
+        }
     }
 
     /**
@@ -92,8 +129,18 @@ public class home extends javax.swing.JFrame {
         });
 
         btnsimpan.setText("Simpan");
+        btnsimpan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnsimpanActionPerformed(evt);
+            }
+        });
 
         btnhapus.setText("Hapus");
+        btnhapus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnhapusActionPerformed(evt);
+            }
+        });
 
         btnbatal.setText("Batal");
 
@@ -108,6 +155,11 @@ public class home extends javax.swing.JFrame {
                 "Nama", "Alamat", "Umur", "Email"
             }
         ));
+        tbldata.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tbldataMouseClicked(evt);
+            }
+        });
         jScrollPane2.setViewportView(tbldata);
 
         jLabel6.setText("Cari");
@@ -202,6 +254,48 @@ public class home extends javax.swing.JFrame {
     private void cmbcariActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbcariActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_cmbcariActionPerformed
+
+    private void btnsimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnsimpanActionPerformed
+        try {
+            st = cn.createStatement();
+            if (txtname.getText().equals("") || txtalamat.getText().equals("")|| txtumur.getText().equals("")|| txtemail.getText().equals("")) {
+                JOptionPane.showMessageDialog(null, "data tidak boleh kosong","validasi data", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            
+            if (btnsimpan.getText()== "Simpan") {
+                String cek = "SELECT * FROM user WHERE nama = '"+txtname.getText() +"'";
+                rs = st.executeQuery(cek);
+                if(rs.next()){
+                    JOptionPane.showMessageDialog(null,"data sudah ada");
+                }else{
+                    String sql = "INSERT INTO user VALUES ('" + txtname.getText()+
+                            "','" + txtalamat.getText() + 
+                            "','" + txtumur.getText()+
+                            "','" + txtemail.getText() + "')";
+                    st.executeUpdate(sql);
+                    JOptionPane.showMessageDialog(null,"data berhasil disimpan");
+                }
+            }else{
+                  
+                    }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null,e);
+       
+        }     
+    }//GEN-LAST:event_btnsimpanActionPerformed
+
+    private void btnhapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnhapusActionPerformed
+
+    }//GEN-LAST:event_btnhapusActionPerformed
+
+    private void tbldataMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbldataMouseClicked
+        txtname.setText(tbldata.getValueAt(tbldata.getSelectedRow(),1).toString());
+        txtalamat.setText(tbldata.getValueAt(tbldata.getSelectedRow(),2).toString());
+        txtumur.setText(tbldata.getValueAt(tbldata.getSelectedRow(),3).toString());
+        txtemail.setText(tbldata.getValueAt(tbldata.getSelectedRow(),4).toString());
+        btnsimpan.setText("Ubah");
+    }//GEN-LAST:event_tbldataMouseClicked
 
     /**
      * @param args the command line arguments
